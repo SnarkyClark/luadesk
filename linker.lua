@@ -1,20 +1,50 @@
-title = "LuaDesk"
-welcome = [[
+-------------------
+-- configuration --
+-------------------
+conf = {
+	title = "LuaDesk",
+	welcome = [[
 Welcome to LuaDesk!
-Since no application scripts where found,
+
+Since no application scripts were found,
+the embedded linker is now starting...
+]],
+	step1 = [[
+Step 1 is to select one or more Lua scripts
+to link onto the host executable.
+
+They will be linked in the order selected,
+and one must contain a main() function. If
+more then one script has a main() function,
+the last one linked will be called.
+]],
+	step2 = [[
+Step 2 is to specify the name and location
+of the output executable.
 ]]
+}
 
 function main(args)
-	iup.Message(title, welcome)
+	iup.Message(conf.title, conf.welcome)
 
-    local infile = inputfiles()
+	------------
+	-- step 1 --
+	------------
+	iup.Message(conf.title, conf.step1)
+    local infile = inputfiles(conf.title .. " Input Files(s)", "Lua Scripts|*.lua;Lua Objects|*.lo;All Files|*.*")
     if not infile then return 1 end
 
-    local outfile = outputfile()
+	------------
+	-- step 2 --
+	------------
+	iup.Message(conf.title, conf.step2)
+    local outfile = outputfile(conf.title .. "Output File", "Executable|*.exe;All Files|*.*")
     if not outfile then return 1 end
 
+    ------------
+    -- linker --
+    ------------
     local fo = io.open(outfile, 'wb')
-
     -- copy self
     local fi = io.open(args[1], 'rb')
     fo:write(fi:read('*a'))
@@ -26,7 +56,7 @@ function main(args)
         if fi then
             -- read in file
             local buf = fi:read('*a')
-            -- register toc entry
+            -- register TOC entry
             toc[i] = {
                 name = v,
                 offset = fo:seek(),
@@ -37,10 +67,12 @@ function main(args)
             fi:close()
         end
     end
-    -- finish with TOC
+    -- cap file with TOC
     local offset = fo:seek()
+    -- TOC header
     fo:write("LuaDesk PQ" .. ld.htons(#infile))
     for i, v in ipairs(toc) do
+        -- TOC entry
         fo:write(table.concat {
             ld.htons(#v.name),
             ld.htonl(v.length),
@@ -48,12 +80,17 @@ function main(args)
             v.name
         })
     end
+    -- TOC footer
     fo:write(ld.htonl(offset) .. "LuaDesk PQ")
+    -- fini
     fo:close()
 
     return 0
 end
 
+--------------------------------
+-- explode a string by a char --
+--------------------------------
 function explode(p, d)
     local t, ll
     t = {}
@@ -72,20 +109,24 @@ function explode(p, d)
     return t
 end
 
-function inputfiles()
+-------------------------------------------
+-- prompt for one or more existing files --
+-------------------------------------------
+function inputfiles(title, extfilter)
     local infile = {}
+	-- create file selection dialog
     local dlg = iup.filedlg {
         dialogtype = 'OPEN',
-        title = title .. " Input File(s)",
-        extfilter = "Lua Scripts|*.lua;Lua Objects|*.lo;All Files|*.*",
+        title = title,
+        extfilter = extfilter,
         multiplefiles = 'YES',
-        directory = "./"
+        directory = "./" -- CWD
     }
-
-    -- Shows file dialog in the center of the screen
+    -- shows modal file dialog in the center of the screen
     dlg:popup(iup.ANYWHERE, iup.ANYWHERE)
 
     if tonumber(dlg.status) ~= -1 then
+		-- parse filedlg output into sensible array
         infile = explode(dlg.value, '|')
         if #infile > 1 then
             local t = {}
@@ -105,16 +146,19 @@ function inputfiles()
     end
 end
 
-function outputfile()
+------------------------------------
+-- prompt for one path + filename --
+------------------------------------
+function outputfile(title, extfilter)
+	-- create file selection dialog
     local dlg = iup.filedlg {
         dialogtype = 'SAVE',
-        title = title .. " Output file",
-        extfilter = "Executable|*.exe;All Files|*.*",
+        title = title,
+        extfilter = extfilter,
         multiplefiles = 'YES',
-        directory = "./"
+        directory = "./" -- CWD
     }
-
-    -- Shows file dialog in the center of the screen
+    -- shows modal file dialog in the center of the screen
     dlg:popup(iup.ANYWHERE, iup.ANYWHERE)
 
     if tonumber(dlg.status) ~= -1 then
@@ -122,5 +166,4 @@ function outputfile()
     else
         return
     end
-
 end

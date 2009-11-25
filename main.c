@@ -102,6 +102,21 @@ int L_htonl(lua_State *L) {
     return 1;
 }
 
+int L_ntohs(lua_State *L) {
+    uint16_t n = *(uint16_t*)luaL_checkstring(L, 1);
+    n = htons(n);
+    lua_pushnumber(L, n);
+    return 1;
+}
+
+int L_ntohl(lua_State *L) {
+    uint32_t n = *(uint32_t*)luaL_checkstring(L, 1);
+    n = htonl(n);
+    lua_pushnumber(L, n);
+    return 1;
+}
+
+
 static const luaL_Reg R_ld_functions[] = {
 	{"htons", L_htons},
 	{"htonl", L_htonl},
@@ -152,9 +167,9 @@ paquet_t* paquet_open (const char* filename) {
 	FILE* fp;
 	paquet_t* p = NULL;
 	int i;
-	uint32_t offset;
-	uint16_t count;
-	uint32_t soffset;
+	uint32_t offset = 0;
+	uint16_t count = 0;
+	uint32_t soffset = 0;
 
 	fp = fopen(filename, "rb");
 
@@ -221,7 +236,7 @@ int report (lua_State *L, int status) {
         const char *msg = lua_tostring(L, -1);
         if (msg == NULL) msg = "(error object is not a string)";
         fprintf(stderr, msg);
-        IupMessage("Error!", msg);
+        IupMessage("Script Error!", msg);
         lua_pop(L, 1);
     }
     return status;
