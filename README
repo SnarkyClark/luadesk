@@ -10,7 +10,7 @@ Given that IUP is statically linked, this means that life gets much easier when 
 
 Howto:
 
-So how do you turn your own (or the example scripts) into an executable? Just run the luadesk executable, and it will run the embedded "linker" script. Follow the prompts to select one or more Lua scripts (plain-text or compiled) and specify an output file.
+So how do you turn your own (or the example) scripts into an executable? Just run the luadesk executable, and it will launch the embedded "linker" script. Follow the prompts to select one or more Lua scripts (plain-text or compiled) and specify an output file.
 
 Any syntax or runtime script errors will be displayed as a popup when you run the output executable (and will cause the program to immediately exit). Have fun!
 
