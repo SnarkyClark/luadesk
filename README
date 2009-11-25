@@ -1,0 +1,29 @@
+LuaDesk
+
+A basic script host for rapid desktop application development using Lua & IUP. Currently focused on Windows deployment, but can be adapated to GTK+ and Motif. 
+
+Summary:
+
+Using LuaDesk, one can build a stand-alone, interactive executable with a GUI that has no external dependencies using the Lua language. Functionality think of it as VB for ubergeeks. The primary purpose is to allow rapid (rabid?) application development for small to medium-sized portable desktop "applets" or "vertical market" programs. Current uses include a basic POS system, postage meter interface, and various datamining/reporting tools.
+
+Given that IUP is statically linked, this means that life gets much easier when we statically link ALL third-party Lua libraries used by the scripts. It also gives the benefit of a single file deployment/installation. Downsides are a more complicated build/project and a bunch of extra work. Currently included libraries are: LuaFileSystem and LuaCurl. Future additions will be a XML parser and LPEG. LuaSQL & LuaSocket are being looked at, but may take awhile. Feel free to help out ;)
+
+Howto:
+
+So how do you get the script.lua file into the executable? Use this magic incantation (or just use the code::blocks project and it is automatic): 
+
+luac5.1 -o script.o script.lua
+bin2c -o script.h -n script script.o
+
+This compiles and "embedds" the script.lua file into the script.h file. Multiple script can be added the same way, just use different names for each. Then #include the .h file and issue the following C code for each:
+
+report(L, luaL_loadbuffer(L, <name>_bytes, sizeof(<name>_bytes), <name>_source) || lua_pcall(L, 0, 0, 0));
+
+This will popup any errors that occur in the scripts. All scripts share the global Lua state, so this is equivalant to require()ing each script file. Just make sure that the script with your main() function is called last.
+
+References: 
+
+Lua - http://www.lua.org/
+IUP - http://www.tecgraf.puc-rio.br/iup/
+LuaFileSystem - http://www.keplerproject.org/luafilesystem/
+

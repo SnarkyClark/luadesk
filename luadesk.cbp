@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="luadesk" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin\Debug\luadesk" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Debug\" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDEBUG" />
+					<Add directory="include\iup" />
+					<Add directory="include\cd" />
+					<Add directory="include\im" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add library="imlua51" />
+					<Add library="cdlua51" />
+					<Add library="luafilesystem" />
+					<Add library="luacurl" />
+					<Add library="curl" />
+					<Add library="lua" />
+					<Add library="iupluacontrols51" />
+					<Add library="iuplua_pplot51" />
+					<Add library="iupluaim51" />
+					<Add library="iupluacd51" />
+					<Add library="iuplua51" />
+					<Add library="iupcontrols" />
+					<Add library="iup_pplot" />
+					<Add library="iupim" />
+					<Add library="iupcd" />
+					<Add library="iup" />
+					<Add library="cd" />
+					<Add library="im" />
+					<Add library="wldap32" />
+					<Add library="ws2_32" />
+					<Add library="comctl32" />
+					<Add library="comdlg32" />
+					<Add library="ole32" />
+					<Add library="gdi32" />
+					<Add directory="lib\iup" />
+					<Add directory="lib\cd" />
+					<Add directory="lib\im" />
+					<Add directory="lib" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\luadesk" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Release\" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include\iup" />
+					<Add directory="include\cd" />
+					<Add directory="include\im" />
+					<Add directory="include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="imlua51" />
+					<Add library="cdlua51" />
+					<Add library="luafilesystem" />
+					<Add library="luacurl" />
+					<Add library="curl" />
+					<Add library="lua" />
+					<Add library="iupluacontrols51" />
+					<Add library="iuplua_pplot51" />
+					<Add library="iupluaim51" />
+					<Add library="iupluacd51" />
+					<Add library="iuplua51" />
+					<Add library="iupcontrols" />
+					<Add library="iup_pplot" />
+					<Add library="iupim" />
+					<Add library="iupcd" />
+					<Add library="iup" />
+					<Add library="cd" />
+					<Add library="im" />
+					<Add library="wldap32" />
+					<Add library="ws2_32" />
+					<Add library="comctl32" />
+					<Add library="comdlg32" />
+					<Add library="ole32" />
+					<Add library="gdi32" />
+					<Add directory="lib\iup" />
+					<Add directory="lib\cd" />
+					<Add directory="lib\im" />
+					<Add directory="lib" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Linker>
+			<Add library="gdi32" />
+			<Add library="user32" />
+			<Add library="kernel32" />
+		</Linker>
+		<Unit filename="main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="resource.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="script.h" />
+		<Unit filename="script.lua">
+			<Option compiler="gcc" use="1" buildCommand="./tools/luac5.1 -o script.o script.lua\n./tools/bin2c -o script.h -n script script.lua" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

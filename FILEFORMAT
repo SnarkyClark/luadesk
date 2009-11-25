@@ -1,0 +1,26 @@
+This is the platform independent 'LuaDesk Paquet' file format that LuaDesk offers. The LuaDesk executable has an embedded script that creates this packed file using itself as a base. All TOC integers are stored in network order. To create a paquet from your own Lua scripts (plaintext or compiled), simple run the LuaDesk executable and follow the prompts.
+
++---------+
+|  Host   |
+|   LVM   |
+|  Libs   | 
++---------+
+|   Lua   |
+| Scripts |
++---------+
+|   TOC   |
++---------+
+
+TOC Header
+10 bytes - signature ("LuaDesk PQ")
+2 bytes - number of embedded scripts
+
+TOC Entry (one for each embedded file)
+2 bytes - length of name
+4 bytes - length of data
+4 bytes - file offset to data (from start of file)
+variable - script name
+
+TOC Footer
+4 bytes - TOC file offset
+10 bytes - signature ("LuaDesk PQ")
