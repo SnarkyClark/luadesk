@@ -10,16 +10,9 @@ Given that IUP is statically linked, this means that life gets much easier when 
 
 Howto:
 
-So how do you get the script.lua file into the executable? Use this magic incantation (or just use the code::blocks project and it is automatic): 
+So how do you turn your own (or the example scripts) into an executable? Just run the luadesk executable, and it will run the embedded "linker" script. Follow the prompts to select one or more Lua scripts (plain-text or compiled) and specify an output file.
 
-luac5.1 -o script.o script.lua
-bin2c -o script.h -n script script.o
-
-This compiles and "embedds" the script.lua file into the script.h file. Multiple script can be added the same way, just use different names for each. Then #include the .h file and issue the following C code for each:
-
-report(L, luaL_loadbuffer(L, <name>_bytes, sizeof(<name>_bytes), <name>_source) || lua_pcall(L, 0, 0, 0));
-
-This will popup any errors that occur in the scripts. All scripts share the global Lua state, so this is equivalant to require()ing each script file. Just make sure that the script with your main() function is called last.
+Any syntax or runtime script errors will be displayed as a popup when you run the output executable (and will cause the program to immediately exit). Have fun!
 
 References: 
 
