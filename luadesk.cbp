@@ -103,15 +103,17 @@
 			<Add library="user32" />
 			<Add library="kernel32" />
 		</Linker>
+		<Unit filename="linker.h" />
+		<Unit filename="linker.lua">
+			<Option compile="1" />
+			<Option weight="0" />
+			<Option compiler="gcc" use="1" buildCommand="./tools/luac5.1 -o linker.o linker.lua\n./tools/bin2c -o linker.h -n linker linker.o" />
+		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="resource.rc">
 			<Option compilerVar="WINDRES" />
-		</Unit>
-		<Unit filename="script.h" />
-		<Unit filename="script.lua">
-			<Option compiler="gcc" use="1" buildCommand="./tools/luac5.1 -o script.o script.lua\n./tools/bin2c -o script.h -n script script.lua" />
 		</Unit>
 		<Extensions>
 			<code_completion />

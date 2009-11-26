@@ -31,14 +31,14 @@ function main(args)
 	-- step 1 --
 	------------
 	iup.Message(conf.title, conf.step1)
-    local infile = inputfiles(conf.title .. " Input Files(s)", "Lua Scripts|*.lua;Lua Objects|*.lo;All Files|*.*")
+    local infile = inputfiles(conf.title .. " Input Files(s)", "Lua Scripts|*.lua|Lua Objects|*.lo|All Files|*.*")
     if not infile then return 1 end
 
 	------------
 	-- step 2 --
 	------------
 	iup.Message(conf.title, conf.step2)
-    local outfile = outputfile(conf.title .. "Output File", "Executable|*.exe;All Files|*.*")
+    local outfile = outputfile(conf.title .. "Output File", "Executable|*.exe|All Files|*.*")
     if not outfile then return 1 end
 
     ------------
