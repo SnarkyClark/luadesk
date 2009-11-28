@@ -1,18 +1,18 @@
 LuaDesk
 
-A basic script host for rapid desktop application development using Lua & IUP. Currently focused on Windows deployment, but can be adapated to GTK+ and Motif. 
+A basic script host for rapid desktop application development using Lua & IUP. Currently focused on Windows deployment, but can be adapted to GTK+ and Motif. 
 
 Summary:
 
-Using LuaDesk, one can build a stand-alone, interactive executable with a GUI that has no external dependencies using the Lua language. Functionality think of it as VB for ubergeeks. The primary purpose is to allow rapid (rabid?) application development for small to medium-sized portable desktop "applets" or "vertical market" programs. Current uses include a basic POS system, postage meter interface, and various datamining/reporting tools.
+Using LuaDesk, one can build a stand-alone, interactive executable with a GUI that has no external dependencies using the Lua language. Functionally think of it as VB for ubergeeks - but no compiler is needed. The primary purpose is to allow rapid (rabid?) application development for small to medium-sized portable desktop "applets" or "vertical market" programs. Current uses include a basic POS system, postage meter interface, and various data-mining/reporting tools.
 
 Given that IUP is statically linked, this means that life gets much easier when we statically link ALL third-party Lua libraries used by the scripts. It also gives the benefit of a single file deployment/installation. Downsides are a more complicated build/project and a bunch of extra work. Currently included libraries are: LuaFileSystem and LuaCurl. Future additions will be a XML parser and LPEG. LuaSQL & LuaSocket are being looked at, but may take awhile. Feel free to help out ;)
 
-Howto:
+How to:
 
-So how do you turn your own (or the example) scripts into an executable? Just run the luadesk executable, and it will launch the embedded "linker" script. Follow the prompts to select one or more Lua scripts (plain-text or compiled) and specify an output file.
+So how do you turn your own (or on of the example) scripts into an executable? Just run the luadesk executable, and it will launch the embedded "linker" script. Follow the prompts to select one or more Lua scripts (plain-text or compiled) and specify an output file. The way it works internally is modeled after how self-extracting archives work. All "linked" files are appended to the host executable and a table of contents is created at the end. But instead of writing each packaged file to storage when the host is launched, each linked file (Lua script in this case) is run through the Lua Virtual Machine.
 
-Any syntax or runtime script errors will be displayed as a popup when you run the output executable (and will cause the program to immediately exit). Have fun!
+Any syntax or runtime script errors will be displayed as a pop-up when you run the output executable (and will cause the program to immediately exit). Have fun!
 
 References: 
 

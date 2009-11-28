@@ -44,6 +44,17 @@ function main(args)
     ------------
     -- linker --
     ------------
+	-- progress popup
+	local progress = iup.progressbar { max = #infile + 1, expand = 'HORIZONTAL' }
+	local dlg = iup.dialog {
+		title = conf.title, resize = 'NO', maxbox = 'NO',
+		iup.vbox {
+			margin = '16x16', alignment = 'ACENTER', cgap = 8,
+			iup.label { title = string.format("Linking '%s'...", outfile) },
+			progress
+		}
+	}
+	dlg:showxy(iup.CENTER, iup.CENTER)
     local fo = io.open(outfile, 'wb')
     -- copy self
     local fi = io.open(args[1], 'rb')
@@ -52,6 +63,9 @@ function main(args)
     -- process scripts
     local toc = {}
     for i, v in ipairs(infile) do
+    	-- stay responsive
+    	progress.value = i
+		ldesk.msleep(10)
         local fi = io.open(v, 'rb')
         if fi then
             -- read in file
@@ -67,23 +81,31 @@ function main(args)
             fi:close()
         end
     end
+	progress.value = #infile + 1
+	ldesk.msleep(10)
     -- cap file with TOC
     local offset = fo:seek()
     -- TOC header
-    fo:write("LuaDesk PQ" .. ld.htons(#infile))
+    fo:write("LuaDesk PQ" .. ldesk.htons(#infile))
     for i, v in ipairs(toc) do
         -- TOC entry
         fo:write(table.concat {
-            ld.htons(#v.name),
-            ld.htonl(v.length),
-            ld.htonl(v.offset),
+            ldesk.htons(#v.name),
+            ldesk.htonl(v.length),
+            ldesk.htonl(v.offset),
             v.name
         })
     end
     -- TOC footer
-    fo:write(ld.htonl(offset) .. "LuaDesk PQ")
+    fo:write(ldesk.htonl(offset) .. "LuaDesk PQ")
     -- fini
     fo:close()
+
+    ldesk.sleep(1)
+    dlg:hide()
+    dlg:destroy()
+
+    iup.Message(conf.title, "All Done!")
 
     return 0
 end

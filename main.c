@@ -32,21 +32,6 @@
 
 //#include <cdluaim.h>
 
-#if defined(BIG_ENDIAN)
-  #define htons(A) (A)
-  #define htonl(A) (A)
-  #define ntohs(A) (A)
-  #define ntohl(A) (A)
-#else
-  #define htons(A) ((((uint16_t)(A) & 0xff00) >> 8) | \
-                    (((uint16_t)(A) & 0x00ff) << 8))
-  #define htonl(A) ((((uint32_t)(A) & 0xff000000) >> 24) | \
-                    (((uint32_t)(A) & 0x00ff0000) >> 8)  | \
-                    (((uint32_t)(A) & 0x0000ff00) << 8)  | \
-                    (((uint32_t)(A) & 0x000000ff) << 24))
-  #define ntohs  htons
-  #define ntohl  htonl
-#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -54,6 +39,8 @@
 #include <lfs.h>
 extern int luaopen_luacurl (lua_State *L);
 
+#include "hton.h"
+#include "libluadesk.h"
 #include "linker.h"
 
 //static lua_State *globalL = NULL;
@@ -88,41 +75,10 @@ struct paquet_struct {
 	script_t* script;
 } typedef paquet_t;
 
-int L_htons(lua_State *L) {
-    uint16_t n = (uint16_t)luaL_checkint(L, 1);
-    n = htons(n);
-    lua_pushlstring(L, (const char*)&n, 2);
-    return 1;
-}
-
-int L_htonl(lua_State *L) {
-    uint32_t n = (uint32_t)luaL_checklong(L, 1);
-    n = htonl(n);
-    lua_pushlstring(L, (const char*)&n, 4);
-    return 1;
-}
-
-int L_ntohs(lua_State *L) {
-    uint16_t n = *(uint16_t*)luaL_checkstring(L, 1);
-    n = htons(n);
-    lua_pushnumber(L, n);
-    return 1;
-}
-
-int L_ntohl(lua_State *L) {
-    uint32_t n = *(uint32_t*)luaL_checkstring(L, 1);
-    n = htonl(n);
-    lua_pushnumber(L, n);
-    return 1;
-}
-
-
-static const luaL_Reg R_ld_functions[] = {
-	{"htons", L_htons},
-	{"htonl", L_htonl},
-	{NULL, NULL}
-};
-
+/*
+Summary: validate a LuaDesk Paquet TOC footer
+Returns: file offset to TOC header, or 0 on failure
+*/
 uint32_t toc_footer (FILE* fp) {
 	// 4 bytes - TOC file offset
 	// 10 bytes - signature ("LuaDesk PQ")
@@ -143,6 +99,10 @@ uint32_t toc_footer (FILE* fp) {
 	return offset;
 }
 
+/*
+Summary: validate a LuaDesk Paquet TOC header
+Returns: number of linked files, or 0 on failure
+*/
 uint16_t toc_header (FILE* fp, uint32_t offset) {
 	// 10 bytes - signature ("LuaDesk PQ")
 	// 2 bytes - number of embedded scripts
@@ -163,6 +123,10 @@ uint16_t toc_header (FILE* fp, uint32_t offset) {
 	return count;
 }
 
+/*
+Summary: validate, alloc, and read a linked LuaDesk Paquet
+Returns: a paquet_t pointer, or NULL on failure
+*/
 paquet_t* paquet_open (const char* filename) {
 	FILE* fp;
 	paquet_t* p = NULL;
@@ -174,28 +138,35 @@ paquet_t* paquet_open (const char* filename) {
 	fp = fopen(filename, "rb");
 
 	if (fp) {
+		// validate footer & get TOC offset
 		offset = toc_footer(fp);
+		// validate header & get file count
 		if (offset > 0) count = toc_header(fp, offset);
 		if (count > 0 && count <= 16) {
+			// alloc & init paquet holder
 			p = malloc(sizeof(paquet_t));
             memset(p, 0, sizeof(paquet_t));
             p->count = count;
             p->script = malloc(sizeof(script_t) * p->count);
 			if (p->script) {
+				// walk through TOC, loading files in mem
 				memset(p->script, 0, sizeof(script_t) * p->count);
 				offset += 12;
 				for (i = 0; i < count; i++) {
 					script_t* s = &p->script[i];
+					// validate TOC entry
 					if ((fseek(fp, offset, SEEK_SET) == 0)
 					  && (fread(&s->lname, 2, 1, fp) == 1)
 					  && (fread(&s->ldata, 4, 1, fp) == 1)
 					  && (fread(&soffset, 4, 1, fp) == 1)) {
+					  	// translate and alloc script holder
 						s->lname = ntohs(s->lname);
 						s->ldata = ntohl(s->ldata);
 						s->name = malloc(s->lname + 1);
 						s->data = malloc(s->ldata);
 						soffset = ntohl(soffset);
 						if (s->name && s->data) {
+							// zero buffers and read file & info into them
 							memset(s->name, 0, s->lname + 1);
 							fread(s->name, s->lname, 1, fp);
 							memset(s->data, 0, s->ldata);
@@ -217,6 +188,10 @@ paquet_t* paquet_open (const char* filename) {
 	return p;
 }
 
+/*
+Summary: dealloc a paquet buffer
+Returns: nada
+*/
 void paquet_free (paquet_t* p) {
 	uint16_t i;
 	if (p) {
@@ -231,6 +206,10 @@ void paquet_free (paquet_t* p) {
 	}
 }
 
+/*
+Summary: report on the status of a Lua VM invocation to the user
+Returns: Lua status code (0 = success)
+*/
 int report (lua_State *L, int status) {
     if (status && !lua_isnil(L, -1)) {
         const char *msg = lua_tostring(L, -1);
@@ -260,7 +239,7 @@ int main (int argc, char *argv[]) {
     luaopen_luacurl(L);
     iuplua_open(L);
     // add internal lib
-    luaL_register(L, "ld", R_ld_functions);
+    luaL_register(L, "ldesk", R_ld_functions);
 
 	p = paquet_open(argv[0]);
 
@@ -269,33 +248,37 @@ int main (int argc, char *argv[]) {
 		for (i = 0; i < p->count; i++) {
 			script_t* s = &p->script[i];
 			if (s->name && s->data) {
-				report(L, luaL_loadbuffer(L, s->data, s->ldata, s->name)
+				result = report(L, luaL_loadbuffer(L, s->data, s->ldata, s->name)
 					|| lua_pcall(L, 0, 0, 0));
+				// there was a syntax error, stop the car!
+				if (result != 0) break;
 			}
 		}
 		paquet_free(p);
 	} else {
 		// if no linked scripts, then run embedded packaging script
-		report(L, luaL_loadbuffer(L, linker_bytes, sizeof(linker_bytes), linker_source)
+		result = report(L, luaL_loadbuffer(L, linker_bytes, sizeof(linker_bytes), linker_source)
 			|| lua_pcall(L, 0, 0, 0));
 	}
 
-	// all done loading scripts, time to rock & roll
-	lua_getglobal(L, "main");
-	if (lua_isfunction(L, -1)) {
-		// create table with arguments
-		lua_createtable(L, argc, 0);
-		for (i = 0; i < argc; ++i) {
-			lua_pushstring(L, argv[i]);
-			lua_rawseti(L, -2, i + 1);
+	if (result == 0) {
+		// all done loading scripts & no errors, time to rock & roll
+		lua_getglobal(L, "main");
+		if (lua_isfunction(L, -1)) {
+			// create table with arguments
+			lua_createtable(L, argc, 0);
+			for (i = 0; i < argc; ++i) {
+				lua_pushstring(L, argv[i]);
+				lua_rawseti(L, -2, i + 1);
+			}
+			// call main() function
+			report(L, lua_pcall(L, 1, 1, 0));
+			// if main() returned an number,
+			// cast it to int and return it as process result
+			if (lua_isnumber(L, -1)) result = lua_tointeger(L, -1);
+		} else {
+			IupMessage("LuaDesk", "main() function not found!");
 		}
-		// call main() function
-		report(L, lua_pcall(L, 1, 1, 0));
-		// if main() returned an number,
-		// cast it to int and return it as process result
-		if (lua_isnumber(L, -1)) result = lua_tointeger(L, -1);
-	} else {
-		IupMessage("LuaDesk", "main() function not found!");
 	}
 
     lua_close(L);

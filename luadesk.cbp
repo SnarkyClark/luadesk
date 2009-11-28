@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-DMINGW" />
 					<Add option="-DDEBUG" />
 					<Add directory="include\iup" />
 					<Add directory="include\cd" />
@@ -20,6 +21,7 @@
 					<Add directory="include" />
 				</Compiler>
 				<Linker>
+					<Add option="--enable-stdcall-fixup" />
 					<Add library="imlua51" />
 					<Add library="cdlua51" />
 					<Add library="luafilesystem" />
@@ -64,6 +66,7 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="--enable-stdcall-fixup" />
 					<Add library="imlua51" />
 					<Add library="cdlua51" />
 					<Add library="luafilesystem" />
@@ -103,6 +106,11 @@
 			<Add library="user32" />
 			<Add library="kernel32" />
 		</Linker>
+		<Unit filename="hton.h" />
+		<Unit filename="libluadesk.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="libluadesk.h" />
 		<Unit filename="linker.h" />
 		<Unit filename="linker.lua">
 			<Option compile="1" />
