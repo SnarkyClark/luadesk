@@ -1,8 +1,10 @@
 #include <stdint.h>
-
+#include <string.h>
 #include <iup.h>
 #include "hton.h"
 #include "libluadesk.h"
+#include "crc32.h"
+#include "md5.h"
 
 #include <unistd.h>
 #define msleep(msec) (usleep((msec) * 1000))
@@ -55,6 +57,29 @@ int L_sleep(lua_State *L) {
 	return 0;
 }
 
+int L_crc32(lua_State* L) {
+	size_t l = 0; uint32_t n = 0;
+	const unsigned char* s = (const unsigned char*)lua_tolstring(L, 1, &l);
+	if (s && l); n = (uint32_t)crc32(s, (unsigned int)l);
+	lua_pushlstring(L, (const char*)&n, sizeof(n));
+	return 1;
+}
+
+int L_md5(lua_State* L) {
+	struct ldesk_MD5Context context;
+	uint8_t checksum[16];
+	size_t l = 0;
+	memset(checksum, 0, 16);
+	const uint8_t* s = (uint8_t*)lua_tolstring(L, 1, &l);
+	if (s && l) {
+		ldesk_MD5Init(&context);
+		ldesk_MD5Update(&context, s, l);
+		ldesk_MD5Final(checksum, &context);
+	}
+	lua_pushlstring(L, (const char*)checksum, 16);
+	return 1;
+}
+
 const luaL_Reg R_ld_functions[] = {
 	{"htons", L_htons},
 	{"htonl", L_htonl},
@@ -62,6 +87,8 @@ const luaL_Reg R_ld_functions[] = {
 	{"ntohl", L_htonl},
 	{"msleep", L_msleep},
 	{"sleep", L_sleep},
+	{"crc32", L_crc32},
+	{"md5", L_md5},
 	{NULL, NULL}
 };
 
