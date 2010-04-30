@@ -38,6 +38,7 @@
 
 #include <lfs.h>
 extern int luaopen_luacurl (lua_State *L);
+extern int luaopen_lsqlite3 (lua_State *L);
 
 #include "hton.h"
 #include "libluadesk.h"
@@ -237,6 +238,7 @@ int main (int argc, char *argv[]) {
     // add third-party libs
 	luaopen_lfs(L);
     luaopen_luacurl(L);
+    luaopen_lsqlite3(L);
     iuplua_open(L);
     // add internal lib
     luaL_register(L, "ldesk", R_ld_functions);
